@@ -127,8 +127,12 @@ namespace DevExpress.ExpressApp.Updater
 
             if( args.Length == 0 )
             {
-                MessageBox.Show("Параметры не могут быть пустыми.", "Внимание", MessageBoxButtons.OK,
-                                MessageBoxIcon.Exclamation);
+                AddParameters addParameters = new AddParameters();
+
+                if( addParameters.ShowDialog() == DialogResult.OK )
+                {
+                    args = addParameters.Parameters;
+                }
             }
 
 			if(args.Length >= 1) 

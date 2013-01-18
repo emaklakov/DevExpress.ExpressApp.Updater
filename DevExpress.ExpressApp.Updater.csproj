@@ -131,7 +131,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddParameters.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddParameters.Designer.cs">
+      <DependentUpon>AddParameters.cs</DependentUpon>
+    </Compile>
     <Compile Include="ZipStorer.cs" />
+    <EmbeddedResource Include="AddParameters.resx">
+      <DependentUpon>AddParameters.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="App.ico" />
     <Compile Include="AssemblyVersionInfo.cs">
       <SubType>Code</SubType>
