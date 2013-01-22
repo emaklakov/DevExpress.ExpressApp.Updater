@@ -57,6 +57,7 @@ namespace DevExpress.ExpressApp.Win.Utils
         string filePath = "";
 		private ProgressBar progressBar;
 	    private string[] param = {""};
+	    private TextBox txtDetails;
 
 		public Icon GetExecutingApplicationIcon()
 		{
@@ -219,6 +220,7 @@ namespace DevExpress.ExpressApp.Win.Utils
 
             if (!e.Cancelled)
             {
+                SetDetailsText( "Распаковка файла" );
                 ExtractZip( filePath, folderUpdate );
             }
         }
@@ -249,7 +251,7 @@ namespace DevExpress.ExpressApp.Win.Utils
 			waitLabel.Location = new System.Drawing.Point(Padding * 2 + picture.Width, 0);
             waitLabel.Text = "  Обновление приложения до последней версии...  ";
 			place.Controls.Add(waitLabel);
-			Size = new Size(picture.Width + waitLabel.Width + Padding * 3, picture.Height + Padding * 2 + 10);
+			Size = new Size(picture.Width + waitLabel.Width + Padding * 3, picture.Height + Padding * 2 + 30);
 			waitLabel.Top = (picture.Height - waitLabel.Height)/2 + Padding - 5;
 			progressBar = new System.Windows.Forms.ProgressBar();
 			progressBar.Minimum = 0;
@@ -259,6 +261,44 @@ namespace DevExpress.ExpressApp.Win.Utils
 			progressBar.Size = new Size(waitLabel.Width - 15, 10);
 			place.Controls.Add(progressBar);
             this.Shown += OnShown;
+
+            // Показать подробнее
+            CheckBox ShowDetails = new CheckBox();
+		    ShowDetails.Checked = false;
+		    ShowDetails.AutoSize = true;
+            ShowDetails.Text = "Показать подробнее";
+            ShowDetails.Location = new System.Drawing.Point( Padding, 55 );
+            ShowDetails.CheckedChanged += new EventHandler( ShowDetails_CheckedChanged );
+            place.Controls.Add( ShowDetails );
+
+		    txtDetails = new TextBox();
+		    txtDetails.ReadOnly = false;
+		    txtDetails.BackColor = Color.White;
+            txtDetails.Visible = false;
+		    txtDetails.Multiline = true;
+            txtDetails.ScrollBars = ScrollBars.Vertical;
+            txtDetails.Location = new System.Drawing.Point( Padding, 80 );
+            txtDetails.Width = ClientSize.Width - 22;
+		    txtDetails.Height = 90;
+            place.Controls.Add( txtDetails );
+        }
+
+        void ShowDetails_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( ((CheckBox)sender).Checked )
+            {
+                Size = new Size( Size.Width, Size.Height + 102 );
+                txtDetails.SelectionStart = txtDetails.TextLength;
+                txtDetails.ScrollToCaret();
+                txtDetails.Visible = true;
+            }
+            else
+            {
+                Size = new Size( Size.Width, Size.Height - 102 );
+                txtDetails.Visible = false;
+            }
+
+            Application.DoEvents();
         }
 
         /// <summary>
@@ -275,11 +315,15 @@ namespace DevExpress.ExpressApp.Win.Utils
         {
             try
             {
+                SetDetailsText( "Запуск обновления" );
+
                 Uri uri = new Uri( Param[0].ToString() ); // Uri для проверки
 
                 // Проверяем откуда будем скачивать: Web или Local
                 if ( uri.IsFile )
                 {
+                    SetDetailsText( "Локальное обновление" );
+
                     // Производим скачивание с локального сервера
                     this.Maximum = GetFilesCount( Param[0] ); // Получаем поличество файлов в папке обновления
                     CopyNewVersion( Param[0], AppDomain.CurrentDomain.BaseDirectory );
@@ -288,6 +332,9 @@ namespace DevExpress.ExpressApp.Win.Utils
                 }
                 else 
                 {
+                    SetDetailsText( "Web обновление" );
+
+                    SetDetailsText( "Скачивание файла" );
                     DownloadNewVersion( Param[0].ToString() ); // Производим скачивание файла
                 }
             }
@@ -311,6 +358,8 @@ namespace DevExpress.ExpressApp.Win.Utils
         /// </summary>
         private void EndUpdate()
         {
+            SetDetailsText( "Завершаем обновление" );
+
             if( Param.Length > 1 )
             {
                 Process.Start( Path.Combine( AppDomain.CurrentDomain.BaseDirectory, Param[1] ), "ApplicationUpdateComplete" );
@@ -347,6 +396,14 @@ namespace DevExpress.ExpressApp.Win.Utils
 			progressBar.Value++;
 			Application.DoEvents();
 		}
+
+        public void SetDetailsText(string Text)
+        {
+            txtDetails.Text += String.Format("{0}: {1}", DateTime.Now, Text) + "\r\n";
+            txtDetails.SelectionStart = txtDetails.TextLength;
+            txtDetails.ScrollToCaret();
+            Application.DoEvents();
+        }
 
 		public void SetProgressPosition(int maximum, int currentPosiotion) 
         {
